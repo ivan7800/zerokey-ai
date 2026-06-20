@@ -2,7 +2,9 @@
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests; connect-src 'self' https://text.pollinations.ai https://image.pollinations.ai https://api.groq.com https://generativelanguage.googleapis.com https://api.mistral.ai https://api.cohere.com https://openrouter.ai https://api-inference.huggingface.co; img-src 'self' data: blob: https://image.pollinations.ai; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; script-src 'self' 'unsafe-inline';">
+<meta name="referrer" content="no-referrer">
 <title>ZeroKey AI — Orquestador Gratuito Multi-IA</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -91,7 +93,7 @@
    RESET & BASE
 ═══════════════════════════════════════════ */
 *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
-html,body { height:100%; overflow:hidden; }
+html,body { height:100%; min-height:100dvh; overflow:hidden; }
 body {
   font-family: var(--sans);
   background: var(--bg);
@@ -673,7 +675,53 @@ body::before {
    RESPONSIVE
 ═══════════════════════════════════════════ */
 @media(max-width:960px) { .rpanel { display:none; } }
-@media(max-width:640px) { .sidebar { display:none; } }
+@media(max-width:640px) {
+  body { font-size: 13px; }
+  .header {
+    min-height: 56px; height: auto;
+    padding: 8px 10px; gap: 8px;
+    flex-wrap: wrap;
+  }
+  .logo { font-size: 14px; }
+  .logo-mark { width: 28px; height: 28px; }
+  .logo-free, .status-pill, #clk, .theme-icon { display: none; }
+  .theme-btn { width: 38px; height: 24px; }
+  .theme-btn::after { width: 18px; height: 18px; }
+  [data-theme="light"] .theme-btn::after { transform: translateX(14px); }
+  .hbtn { height: 32px; padding: 0 10px; font-size: 11px; }
+  .hbtn.accent { display: none; }
+  .layout { flex-direction: column; }
+  .sidebar {
+    display: block; width: 100%; max-height: 62px;
+    border-right: none; border-bottom: 1px solid var(--ln);
+    overflow-x: auto; overflow-y: hidden;
+  }
+  .sidebar .sb-group:first-child { display: none; }
+  .sidebar .sb-group { padding: 8px 10px; border-top: none; }
+  .sidebar .sb-label { display: none; }
+  .sidebar .sb-group:nth-child(2) { display: flex; gap: 8px; }
+  .mode-btn { width: auto; white-space: nowrap; margin: 0; padding: 8px 11px; flex-shrink: 0; }
+  .msgs { padding: 18px 0; }
+  .welcome { margin-top: 14px; padding: 0 16px; }
+  .welcome h1 { font-size: 24px; }
+  .onb { padding: 16px; }
+  .qgrid { grid-template-columns: 1fr; }
+  .msg-wrap { padding: 0 14px; margin-bottom: 14px; }
+  .msg-wrap.user .msg-bubble { max-width: 92%; }
+  .msg-bubble { font-size: 13.5px; padding: 11px 13px; }
+  .gen-img { max-width: 100%; }
+  .input-area { padding: 10px 12px calc(12px + env(safe-area-inset-bottom)); }
+  .input-box { padding: 9px 10px; border-radius: 13px; }
+  .input-footer { gap: 8px; align-items: flex-start; }
+  .input-nodes { text-align: right; max-width: 52%; }
+  .modal { width: calc(100% - 24px); padding: 20px; max-height: 88dvh; }
+  .toast { left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); text-align: center; }
+}
+
+@media(max-width:380px) {
+  .hbtn { padding: 0 8px; }
+  .logo { width: 100%; }
+}
 </style>
 </head>
 <body>
@@ -698,14 +746,14 @@ body::before {
     <span class="theme-icon">☀️</span>
   </div>
   <button class="hbtn" onclick="openModal()">🔑 Claves</button>
-  <button class="hbtn" onclick="exportSess()">↓ Exportarar</button>
+  <button class="hbtn" onclick="exportSess()">↓ Exportar</button>
   <button class="hbtn" onclick="clearChat()">✕ Limpiar</button>
-  <button class="hbtn accent" onclick="window.open('https://github.com','_blank')">★ GitHub</button>
+  <button class="hbtn accent" onclick="openExternal('https://github.com')">★ GitHub</button>
 </div>
 
 <!-- QUEUE BAR -->
 <div class="qbar" id="qbar">
-  ⏳ <span id="qn">0</span> consulta(s) en cola — se procesarán automáticamente a medianoche cuando se reseteen las cuotas
+  ⏳ <span id="qn">0</span> consulta(s) en cola — se reintentarán automáticamente al abrir la app y durante la sesión
 </div>
 
 <!-- LAYOUT -->
@@ -722,7 +770,7 @@ body::before {
       <button class="mode-btn m0 active" onclick="setMode(this,'auto',0)"><span class="mode-ico">✦</span>Auto-Selector</button>
       <button class="mode-btn m1"        onclick="setMode(this,'creative',1)"><span class="mode-ico">✍️</span>Escritura</button>
       <button class="mode-btn m2"        onclick="setMode(this,'code',2)"><span class="mode-ico">💻</span>Código</button>
-      <button class="mode-btn m3"        onclick="setMode(this,'image',3)"><span class="mode-ico">🖼</span>Imagenn</button>
+      <button class="mode-btn m3"        onclick="setMode(this,'image',3)"><span class="mode-ico">🖼</span>Imagen</button>
       <button class="mode-btn m4"        onclick="setMode(this,'analyze',4)"><span class="mode-ico">🔍</span>Análisis</button>
     </div>
   </div>
@@ -748,7 +796,7 @@ body::before {
                 <div class="onb-n">1</div>
                 <div class="onb-text">
                   <strong>Consigue una clave Groq gratuita</strong> — la mejor IA gratuita, sin tarjeta<br>
-                  <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys →</a>
+                  <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer">console.groq.com/keys →</a>
                 </div>
               </div>
               <div class="onb-step">
@@ -768,9 +816,9 @@ body::before {
             <div class="onb-note">
               O simplemente escribe abajo — Pollinations AI ya está activo y es gratis para siempre.<br>
               Más claves gratuitas:
-              <a href="https://aistudio.google.com/app/apikey" target="_blank">Gemini</a> ·
-              <a href="https://openrouter.ai/keys" target="_blank">OpenRouter</a> ·
-              <a href="https://huggingface.co/settings/tokens" target="_blank">HuggingFace</a>
+              <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer">Gemini</a> ·
+              <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer">OpenRouter</a> ·
+              <a href="https://huggingface.co/settings/tokens" target="_blank" rel="noopener noreferrer">HuggingFace</a>
             </div>
           </div>
         </div>
@@ -784,8 +832,8 @@ body::before {
           </div>
           <div class="qcard" onclick="qp('Genera una imagen de una ciudad futurista de noche con lluvia de neón')">
             <div class="qcard-e">🖼</div>
-            <div class="qcard-l">Imagennn ciudad futurista</div>
-            <div class="qcard-s">Imagennn</div>
+            <div class="qcard-l">Imagen ciudad futurista</div>
+            <div class="qcard-s">Imagen</div>
           </div>
           <div class="qcard" onclick="qp('Escribe un script Python que monitorice el uso de CPU y memoria cada segundo')">
             <div class="qcard-e">💻</div>
@@ -797,7 +845,7 @@ body::before {
             <div class="qcard-l">Análisis trabajo remoto</div>
             <div class="qcard-s">Análisis</div>
           </div>
-          <div class="qcard" onclick="qp('Dame 10 ideas de negocio innovadoras para emprendedores digitales en 2025')">
+          <div class="qcard" onclick="qp('Dame 10 ideas de negocio innovadoras para emprendedores digitales en 2026')">
             <div class="qcard-e">💡</div>
             <div class="qcard-l">Ideas de negocio</div>
             <div class="qcard-s">Ideas</div>
@@ -863,26 +911,26 @@ body::before {
       <div class="modal-ico">🔑</div>
       <div class="modal-title">Claves API</div>
     </div>
-    <p class="modal-sub">All opcional — the app works without any key using Pollinations AI. Adding keys unlocks better models with more capacity. Everything is stored solamente in your browser.</p>
-    <div class="free-note">✓ Pollinations AI siempre activo — sin clave, completamente gratis</div>
+    <p class="modal-sub">Todas son opcionales: la app funciona sin claves con Pollinations AI. Al añadir claves desbloqueas más modelos y capacidad. Las claves se guardan solo en este navegador; tus prompts se envían al proveedor elegido para poder responder.</p>
+    <div class="free-note">✓ Pollinations AI activo — sin clave, con envío directo al proveedor</div>
     <div id="kform"></div>
     <div class="mlinks">
-      <a class="ml" href="https://console.groq.com/keys" target="_blank">
+      <a class="ml" href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer">
         <span>🟠 Groq — Llama 3.3 70B · 14,400 req/day</span><span class="ml-r">Gratis →</span>
       </a>
-      <a class="ml" href="https://aistudio.google.com/app/apikey" target="_blank">
+      <a class="ml" href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer">
         <span>🔵 Google Gemini Flash · 1,500 req/day</span><span class="ml-r">Gratis →</span>
       </a>
-      <a class="ml" href="https://console.mistral.ai/api-keys/" target="_blank">
+      <a class="ml" href="https://console.mistral.ai/api-keys/" target="_blank" rel="noopener noreferrer">
         <span>🔴 Mistral · free tier</span><span class="ml-r">Gratis →</span>
       </a>
-      <a class="ml" href="https://dashboard.cohere.com/api-keys" target="_blank">
+      <a class="ml" href="https://dashboard.cohere.com/api-keys" target="_blank" rel="noopener noreferrer">
         <span>🟢 Cohere Command R+ · free tier</span><span class="ml-r">Gratis →</span>
       </a>
-      <a class="ml" href="https://openrouter.ai/keys" target="_blank">
+      <a class="ml" href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer">
         <span>🟣 OpenRouter · free models included</span><span class="ml-r">Gratis →</span>
       </a>
-      <a class="ml" href="https://huggingface.co/settings/tokens" target="_blank">
+      <a class="ml" href="https://huggingface.co/settings/tokens" target="_blank" rel="noopener noreferrer">
         <span>🟡 HuggingFace · Generación de imágenes FLUX</span><span class="ml-r">Gratis →</span>
       </a>
     </div>
@@ -915,7 +963,7 @@ const PROVIDERS = [
 ];
 
 const PRIORITY = {
-  // Imagenn: HuggingFace first, fallback to Pollinations image
+  // Imagen: HuggingFace first, fallback to Pollinations image
   image:    ['hf','pollinations'],
   // Código: prefer dedicated models, Pollinations as last resort
   code:     ['groq','mistral','openrouter','gemini','cohere','pollinations'],
@@ -936,7 +984,11 @@ const KEY_PFX   = 'ZK_KEY_';
 const QUOTA_PFX = 'ZK_QUOTA_';
 
 const keyRead  = id  => localStorage.getItem(KEY_PFX + id) || '';
-const keyWrite = (id, v) => { if(v && v.trim()) localStorage.setItem(KEY_PFX+id, v.trim()); };
+const keyWrite = (id, v) => {
+  const val = String(v || '').trim();
+  if (val) localStorage.setItem(KEY_PFX + id, val);
+  else localStorage.removeItem(KEY_PFX + id);
+};
 
 // ═══════════════════════════════════════════════════════
 // QUOTA
@@ -994,13 +1046,61 @@ async function getDB() {
     req.onerror = () => rej(req.error);
   });
 }
+const fallbackDB = {
+  read(name) {
+    try { return JSON.parse(localStorage.getItem('ZK_' + name) || '[]'); }
+    catch (_) { return []; }
+  },
+  write(name, data) {
+    try { localStorage.setItem('ZK_' + name, JSON.stringify(data.slice(-80))); }
+    catch (_) {}
+  }
+};
+
 const idb = {
-  sSet: async v  => { const db=await getDB(); return new Promise((r,j)=>{ const x=db.transaction('sessions','readwrite').objectStore('sessions').put(v); x.onsuccess=()=>r(); x.onerror=()=>j(x.error); }); },
-  sGet: async id => { const db=await getDB(); return new Promise((r,j)=>{ const x=db.transaction('sessions','readonly').objectStore('sessions').get(id); x.onsuccess=()=>r(x.result||null); x.onerror=()=>j(x.error); }); },
-  sAll: async () => { const db=await getDB(); return new Promise((r,j)=>{ const x=db.transaction('sessions','readonly').objectStore('sessions').getAll(); x.onsuccess=()=>r(x.result); x.onerror=()=>j(x.error); }); },
-  qAdd: async v  => { const db=await getDB(); return new Promise((r,j)=>{ const x=db.transaction('queue','readwrite').objectStore('queue').add(v); x.onsuccess=()=>r(x.result); x.onerror=()=>j(x.error); }); },
-  qAll: async () => { const db=await getDB(); return new Promise((r,j)=>{ const x=db.transaction('queue','readonly').objectStore('queue').getAll(); x.onsuccess=()=>r(x.result); x.onerror=()=>j(x.error); }); },
-  qDel: async id => { const db=await getDB(); return new Promise((r,j)=>{ const x=db.transaction('queue','readwrite').objectStore('queue').delete(id); x.onsuccess=()=>r(); x.onerror=()=>j(x.error); }); },
+  sSet: async v => {
+    try {
+      const db=await getDB();
+      return new Promise((r,j)=>{ const x=db.transaction('sessions','readwrite').objectStore('sessions').put(v); x.onsuccess=()=>r(); x.onerror=()=>j(x.error); });
+    } catch(e) {
+      const all = fallbackDB.read('sessions').filter(x => x.id !== v.id);
+      all.push(v); fallbackDB.write('sessions', all); return true;
+    }
+  },
+  sGet: async id => {
+    try {
+      const db=await getDB();
+      return new Promise((r,j)=>{ const x=db.transaction('sessions','readonly').objectStore('sessions').get(id); x.onsuccess=()=>r(x.result||null); x.onerror=()=>j(x.error); });
+    } catch(e) { return fallbackDB.read('sessions').find(x => x.id === id) || null; }
+  },
+  sAll: async () => {
+    try {
+      const db=await getDB();
+      return new Promise((r,j)=>{ const x=db.transaction('sessions','readonly').objectStore('sessions').getAll(); x.onsuccess=()=>r(x.result); x.onerror=()=>j(x.error); });
+    } catch(e) { return fallbackDB.read('sessions'); }
+  },
+  qAdd: async v => {
+    try {
+      const db=await getDB();
+      return new Promise((r,j)=>{ const x=db.transaction('queue','readwrite').objectStore('queue').add(v); x.onsuccess=()=>r(x.result); x.onerror=()=>j(x.error); });
+    } catch(e) {
+      const all = fallbackDB.read('queue');
+      const id = Date.now() + Math.floor(Math.random()*1000);
+      all.push({...v, id}); fallbackDB.write('queue', all); return id;
+    }
+  },
+  qAll: async () => {
+    try {
+      const db=await getDB();
+      return new Promise((r,j)=>{ const x=db.transaction('queue','readonly').objectStore('queue').getAll(); x.onsuccess=()=>r(x.result); x.onerror=()=>j(x.error); });
+    } catch(e) { return fallbackDB.read('queue'); }
+  },
+  qDel: async id => {
+    try {
+      const db=await getDB();
+      return new Promise((r,j)=>{ const x=db.transaction('queue','readwrite').objectStore('queue').delete(id); x.onsuccess=()=>r(); x.onerror=()=>j(x.error); });
+    } catch(e) { fallbackDB.write('queue', fallbackDB.read('queue').filter(x => x.id !== id)); }
+  },
 };
 
 // ═══════════════════════════════════════════════════════
@@ -1019,7 +1119,7 @@ async function persistSession() {
 }
 async function loadSesión(id) {
   const s = await idb.sGet(id); if (!s) return;
-  session = s; mdata = s.messages.slice();
+  session = s; mdata = Array.isArray(s.messages) ? s.messages.slice() : [];
   document.getElementById('msgs').innerHTML = '';
   for (const m of mdata) {
     if (m.role==='user') addMsgDOM('user',m.content,[]);
@@ -1034,7 +1134,7 @@ async function renderHistorial() {
   el.innerHTML = all.slice(0,8).map(s =>
     `<div class="sess-item" onclick="loadSesión('${s.id}')">
       <div class="sess-t">${esc(s.title)}</div>
-      <div class="sess-m">${s.messages.length} msg · ${ago(s.updated)}</div>
+      <div class="sess-m">${(Array.isArray(s.messages) ? s.messages.length : 0)} msg · ${ago(s.updated)}</div>
     </div>`
   ).join('');
 }
@@ -1045,7 +1145,7 @@ async function renderHistorial() {
 async function enqueue(p, m) {
   await idb.qAdd({prompt:p, mode:m, ts:Date.now()});
   await refreshQBar();
-  toast('En cola — Pollinations lo gestionará. O se ejecuta mañana 🌙','warn',5000);
+  toast('Consulta guardada en cola local para reintentar más tarde','warn',5000);
   addLog('Consulta en cola','warn');
 }
 async function refreshQBar() {
@@ -1139,7 +1239,7 @@ function renderNodes() {
 function setMode(btn, m) {
   document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active'); mode = m;
-  const labels = {auto:'Auto-selector',creative:'Escritura',code:'Código',image:'Imagenn gen',analyze:'Análisis'};
+  const labels = {auto:'Auto-selector',creative:'Escritura',code:'Código',image:'Imagen gen',analyze:'Análisis'};
   document.getElementById('mode-label').textContent = labels[m]||m;
   document.getElementById('mode-dot').style.background = MODE_COLORS[m]||'var(--blue)';
 }
@@ -1149,6 +1249,7 @@ function handleKey(e) { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send
 function qp(t) { document.getElementById('inp').value=t; send(); }
 function clearChat() { document.getElementById('msgs').innerHTML=''; mdata=[]; session=null; toast('Borrado','ok'); }
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escAttr(s) { return esc(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 function ago(ts) {
   const d=Date.now()-ts;
   if(d<60000) return 'ahora mismo';
@@ -1171,22 +1272,25 @@ function openModal() {
           <span class="kbadge ${k?'sv':'ms'}">${k?'✓ guardada':'opcional'}</span>
         </div>
         <input class="kinp" type="password" id="ki_${p.id}"
-          placeholder="${p.ph||'pega tu clave aquí...'}" value="${k}" autocomplete="off">
+          placeholder="${p.ph||'pega tu clave aquí...'}" value="${escAttr(k)}" autocomplete="new-password" spellcheck="false">
       </div>`;
     }).join('');
   document.getElementById('modal-bg').classList.add('open');
 }
 function bgClick(e) { if(e.target===e.currentTarget) document.getElementById('modal-bg').classList.remove('open'); }
 function saveKeys() {
-  let saved = 0;
+  let changed = 0;
   PROVIDERS.filter(p=>p.keyRequired).forEach(p => {
     const el = document.getElementById('ki_'+p.id);
-    if (el && el.value.trim()) { keyWrite(p.id, el.value.trim()); saved++; }
+    if (!el) return;
+    const before = keyRead(p.id);
+    const after = el.value.trim();
+    if (before !== after) { keyWrite(p.id, after); changed++; }
   });
   document.getElementById('modal-bg').classList.remove('open');
   renderNodes();
-  toast(saved ? saved+' key'+(saved!==1?'s':'')+' saved ✓' : 'Sin cambios', saved?'ok':'warn');
-  if (saved) addLog('Claves actualizadas ('+saved+')','ok');
+  toast(changed ? changed+' cambio(s) guardado(s) ✓' : 'Sin cambios', changed?'ok':'warn');
+  if (changed) addLog('Claves actualizadas ('+changed+')','ok');
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1213,6 +1317,55 @@ function getAvailable(task) {
 }
 
 // ═══════════════════════════════════════════════════════
+// NETWORK HELPERS — timeout + safer errors
+// ═══════════════════════════════════════════════════════
+async function fetchWithTimeout(url, options={}, ms=45000) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  try {
+    return await fetch(url, {...options, signal: ctrl.signal});
+  } catch (e) {
+    if (e.name === 'AbortError') throw new Error('Timeout: el proveedor tardó demasiado');
+    throw e;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function readJSON(res, providerName) {
+  const raw = await res.text();
+  let data = {};
+  try { data = raw ? JSON.parse(raw) : {}; }
+  catch (_) { data = {raw}; }
+  if (!res.ok) {
+    const msg = data.error?.message || data.error || data.message || data.raw || providerName + ' ' + res.status;
+    throw new Error(String(msg).slice(0, 500));
+  }
+  return data;
+}
+
+async function readText(res, providerName) {
+  const text = await res.text();
+  if (!res.ok) throw new Error((text || providerName + ' ' + res.status).slice(0, 500));
+  return text;
+}
+
+function safeImageUrl(url) {
+  const raw = String(url || '').trim();
+  if (!raw) return '';
+  if (raw.startsWith('blob:')) return raw;
+  try {
+    const u = new URL(raw, window.location.href);
+    if (u.protocol === 'https:' && u.hostname === 'image.pollinations.ai') return u.href;
+  } catch (_) {}
+  return '';
+}
+
+function openExternal(url) {
+  window.open(url, '_blank', 'noopener,noreferrer');
+}
+
+// ═══════════════════════════════════════════════════════
 // API CALLS
 // ═══════════════════════════════════════════════════════
 
@@ -1226,79 +1379,73 @@ async function apiPollinations(prompt, task) {
     return { imageUrl: url };
   }
   // Texto: endpoint GET simple, sin CORS
-  const encoded = encodeURIComponent(prompt.slice(0, 1000));
+  const encoded = encodeURIComponent(prompt.slice(0, 1800));
   const seed = Math.floor(Math.random() * 99999);
   const url = `https://text.pollinations.ai/${encoded}?model=openai&seed=${seed}&private=true`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error('Pollinations HTTP ' + res.status);
-  const text = await res.text();
+  const res = await fetchWithTimeout(url, {}, 45000);
+  const text = await readText(res, 'Pollinations');
   if (!text || text.trim().length === 0) throw new Error('Pollinations: respuesta vacía');
   return { text: text.trim() };
 }
 
 async function apiGroq(prompt) {
-  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+  const res = await fetchWithTimeout('https://api.groq.com/openai/v1/chat/completions', {
     method:'POST',
     headers:{'Authorization':'Bearer '+keyRead('groq'),'Content-Type':'application/json'},
     body: JSON.stringify({model:'llama-3.3-70b-versatile', messages:[{role:'user',content:prompt}], max_tokens:2048})
   });
-  const d = await res.json();
-  if (!res.ok) throw new Error(d.error?.message||'Groq '+res.status);
-  return { text: d.choices[0].message.content };
+  const d = await readJSON(res, 'Groq');
+  return { text: d.choices?.[0]?.message?.content || '' };
 }
 
 async function apiGemini(prompt) {
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${keyRead('gemini')}`, {
+  const res = await fetchWithTimeout(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${encodeURIComponent(keyRead('gemini'))}`, {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({contents:[{parts:[{text:prompt}]}]})
   });
-  const d = await res.json();
-  if (!res.ok) throw new Error(d.error?.message||'Gemini '+res.status);
-  return { text: d.candidates?.[0]?.content?.parts?.[0]?.text||'' };
+  const d = await readJSON(res, 'Gemini');
+  return { text: d.candidates?.[0]?.content?.parts?.[0]?.text || '' };
 }
 
 async function apiMistral(prompt, task) {
   const model = task==='code' ? 'codestral-latest' : 'mistral-small-latest';
-  const res = await fetch('https://api.mistral.ai/v1/chat/completions', {
+  const res = await fetchWithTimeout('https://api.mistral.ai/v1/chat/completions', {
     method:'POST',
     headers:{'Authorization':'Bearer '+keyRead('mistral'),'Content-Type':'application/json'},
     body: JSON.stringify({model, messages:[{role:'user',content:prompt}], max_tokens:2048})
   });
-  const d = await res.json();
-  if (!res.ok) throw new Error(d.error?.message||'Mistral '+res.status);
-  return { text: d.choices[0].message.content };
+  const d = await readJSON(res, 'Mistral');
+  return { text: d.choices?.[0]?.message?.content || '' };
 }
 
 async function apiCohere(prompt) {
-  const res = await fetch('https://api.cohere.com/v2/chat', {
+  const res = await fetchWithTimeout('https://api.cohere.com/v2/chat', {
     method:'POST',
     headers:{'Authorization':'Bearer '+keyRead('cohere'),'Content-Type':'application/json'},
     body: JSON.stringify({model:'command-r-plus', messages:[{role:'user',content:prompt}]})
   });
-  const d = await res.json();
-  if (!res.ok) throw new Error(d.message||'Cohere '+res.status);
+  const d = await readJSON(res, 'Cohere');
   return { text: d.message?.content?.[0]?.text || d.text || d.generations?.[0]?.text || '' };
 }
 
 async function apiOR(prompt, task) {
   const model = task==='code' ? 'deepseek/deepseek-r1-distill-llama-70b:free' : 'meta-llama/llama-3.2-3b-instruct:free';
-  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+  const res = await fetchWithTimeout('https://openrouter.ai/api/v1/chat/completions', {
     method:'POST',
     headers:{'Authorization':'Bearer '+keyRead('openrouter'),'Content-Type':'application/json','HTTP-Referer':'https://github.com','X-Title':'ZeroKey AI'},
     body: JSON.stringify({model, messages:[{role:'user',content:prompt}]})
   });
-  const d = await res.json();
-  if (!res.ok) throw new Error(d.error?.message||'OpenRouter '+res.status);
-  return { text: d.choices[0].message.content };
+  const d = await readJSON(res, 'OpenRouter');
+  return { text: d.choices?.[0]?.message?.content || '' };
 }
 
 async function apiHF(prompt) {
-  const res = await fetch('https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell', {
+  const res = await fetchWithTimeout('https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell', {
     method:'POST',
     headers:{'Authorization':'Bearer '+keyRead('hf'),'Content-Type':'application/json'},
     body: JSON.stringify({inputs:prompt})
   });
-  if (!res.ok) { const e=await res.json().catch(()=>({})); throw new Error(e.error||'HF '+res.status); }
+  if (!res.ok) { const e = await readJSON(res, 'HuggingFace').catch(err => ({error: err.message})); throw new Error(e.error || 'HuggingFace ' + res.status); }
   return { imageUrl: URL.createObjectURL(await res.blob()) };
 }
 
@@ -1345,6 +1492,7 @@ async function orchestrate(prompt, modeOvr) {
 
     try {
       const r = await callProvider(p, prompt, task);
+      if (!r?.text && !r?.imageUrl) throw new Error('Respuesta vacía del proveedor');
       quotaBump(p.id);
       addLog(p.name+' ✓','ok');
       document.getElementById('status-text').textContent = 'Listo';
@@ -1402,13 +1550,12 @@ async function send() {
 
   } catch(e) {
     removeEl(tid);
-    // This path should be extremely rare since Pollinations never fails permanently
     addMsgDOM('ai',
-      'Algo salió mal: '+e.message+'\n\nEsto es inusual — Pollinations debería funcionar siempre. Comprueba tu conexión a internet e inténtalo de nuevo.',
+      'No he podido completar la consulta ahora: '+e.message+'\n\nLa he guardado en la cola local para reintentar más tarde. Comprueba tu conexión o tus cuotas si el problema continúa.',
       [], false, null
     );
     st.fail++;
-    try { await persistSession(); } catch(_) {}
+    try { await enqueue(prompt, mode); await persistSession(); } catch(_) { try { await persistSession(); } catch(__) {} }
   } finally {
     updateStats(); renderNodes();
     document.getElementById('status-text').textContent = 'Listo';
@@ -1430,8 +1577,10 @@ function addMsgDOM(role, content, providers, fallback, imageUrl) {
   const fb    = fallback ? `<span class="tag tfb">fallback</span><span class="tag tsv">saved</span>` : '';
 
   let body = '';
-  if (imageUrl) body = `<img class="gen-img" src="${imageUrl}" alt="Generated image">`;
-  else if (content) body = fmt(content);
+  if (imageUrl) {
+    const img = safeImageUrl(imageUrl);
+    body = img ? `<img class="gen-img" src="${escAttr(img)}" alt="Imagen generada">` : fmt('[Imagen bloqueada por seguridad]');
+  } else if (content) body = fmt(content);
 
   const roleName = role==='user' ? 'Tú' : 'ZeroKey';
   w.innerHTML = `
@@ -1459,12 +1608,18 @@ function addTypingDOM(id) {
 function removeEl(id) { document.getElementById(id)?.remove(); }
 
 function fmt(t) {
-  return String(t)
-    .replace(/```(\w*)\n([\s\S]*?)```/g, (_,l,c) => `<pre><code>${esc(c.trim())}</code></pre>`)
+  const blocks = [];
+  let safe = String(t || '').replace(/```([^\n`]*)\n?([\s\S]*?)```/g, (_, _lang, code) => {
+    const i = blocks.push(`<pre><code>${esc(code.trim())}</code></pre>`) - 1;
+    return `\uE000${i}\uE001`;
+  });
+  safe = esc(safe)
     .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
     .replace(/^#{1,3}\s(.+)$/gm, '<strong>$1</strong>')
-    .replace(/\n/g, '<br>');
+    .replace(/\n/g, '<br>')
+    .replace(/\uE000(\d+)\uE001/g, (_, i) => blocks[Number(i)] || '');
+  return safe;
 }
 
 function exportSess() {
@@ -1492,10 +1647,11 @@ setInterval(() => {
 async function boot() {
   loadTheme();       // apply saved theme immediately
   renderNodes();     // sync — shows Pollinations online instantly
-  await getDB();     // init IndexedDB for sessions
+  try { await getDB(); } catch(e) { addLog('IndexedDB no disponible; usando almacenamiento local de reserva','warn'); }
   await renderHistorial();
   await refreshQBar();
   setTimeout(flushQueue, 2000);
+  setInterval(flushQueue, 60 * 60 * 1000);
   addLog('Listo ✓ — Pollinations activo (sin clave)','ok');
 }
 

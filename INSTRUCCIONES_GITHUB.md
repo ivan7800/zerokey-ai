@@ -1,148 +1,79 @@
-# 📋 Cómo subir Nexus AI a GitHub — Paso a paso
+# Cómo subir ZeroKey AI a GitHub
 
-## Qué vas a subir
+## Archivos incluidos
 
-Solo necesitas **2 archivos**:
-- `index.html` — la app completa
-- `README.md` — descripción del proyecto
-
----
-
-## PASO 1 — Crea una cuenta en GitHub (si no tienes)
-
-1. Ve a [github.com](https://github.com)
-2. Haz clic en **Sign up**
-3. Elige un nombre de usuario (será parte de tu URL)
-4. Verifica tu email
+- `index.html` — aplicación completa.
+- `README.md` — descripción pública del proyecto.
+- `LICENSE` — licencia MIT.
+- `SECURITY.md` — notas de seguridad.
+- `.gitignore` — exclusiones básicas.
 
 ---
 
-## PASO 2 — Crea el repositorio
+## 1. Crear repositorio
 
-1. Una vez dentro de GitHub, haz clic en el **+** (arriba a la derecha) → **New repository**
-2. Rellena:
-   - **Repository name**: `nexus-ai`
-   - **Description**: `Free multi-model AI orchestrator — use Groq, Gemini, Mistral and more at zero cost`
-   - **Public** ✓ (para que sea accesible en GitHub Pages)
-   - **Add a README file**: NO (ya tenemos el nuestro)
-3. Clic en **Create repository**
+1. Entra en GitHub.
+2. Pulsa **New repository**.
+3. Nombre recomendado: `zerokey-ai`.
+4. Visibilidad: **Public** si quieres usar GitHub Pages gratis.
+5. No marques “Add README”, porque este proyecto ya lo incluye.
 
 ---
 
-## PASO 3 — Sube los archivos
+## 2. Subir archivos
 
-### Opción A — Desde el navegador (más fácil, sin instalar nada)
+### Desde el navegador
 
-1. En tu repositorio recién creado, haz clic en **uploading an existing file**
-2. Arrastra los dos archivos (`index.html` y `README.md`) a la zona de drop
-3. En el campo **Commit changes** escribe: `Initial release — Nexus AI v1.0`
-4. Clic en **Commit changes**
+1. En el repositorio, pulsa **Add file → Upload files**.
+2. Arrastra todos los archivos del proyecto.
+3. Commit recomendado: `Initial release — ZeroKey AI`.
 
-### Opción B — Con Git (si tienes Git instalado)
+### Con Git
 
 ```bash
-# En la carpeta donde tienes los archivos:
 git init
-git add index.html README.md
-git commit -m "Initial release — Nexus AI v1.0"
+git add .
+git commit -m "Initial release — ZeroKey AI"
 git branch -M main
-git remote add origin https://github.com/TU_USUARIO/nexus-ai.git
+git remote add origin https://github.com/TU_USUARIO/zerokey-ai.git
 git push -u origin main
 ```
 
 ---
 
-## PASO 4 — Activa GitHub Pages (para tener URL pública gratis)
+## 3. Activar GitHub Pages
 
-1. En tu repositorio, ve a **Settings** (pestaña superior)
-2. En el menú izquierdo, haz clic en **Pages**
-3. En **Source**, selecciona **Deploy from a branch**
-4. En **Branch**, selecciona **main** y carpeta **/ (root)**
-5. Haz clic en **Save**
-6. Espera 2-3 minutos
-7. Tu app estará disponible en:
-   ```
-   https://TU_USUARIO.github.io/nexus-ai
-   ```
+1. Ve a **Settings → Pages**.
+2. En **Source**, elige **Deploy from a branch**.
+3. Rama: `main`.
+4. Carpeta: `/ (root)`.
+5. Pulsa **Save**.
 
----
+Tu URL será similar a:
 
-## PASO 5 — Añade el link a tu README
-
-1. Vuelve a tu repositorio en GitHub
-2. Haz clic en el lápiz ✏️ de `README.md`
-3. Cambia `https://your-username.github.io/nexus-ai` por tu URL real
-4. Cambia `your-username` por tu nombre de usuario de GitHub
-5. Haz clic en **Commit changes**
-
----
-
-## PASO 6 — Personaliza (opcional pero recomendado)
-
-### Añadir descripción y URL al repositorio
-1. En la página principal de tu repo, haz clic en el engranaje ⚙️ junto a "About"
-2. Añade:
-   - **Description**: `Free multi-model AI orchestrator`
-   - **Website**: tu URL de GitHub Pages
-   - **Topics**: `ai`, `llm`, `groq`, `gemini`, `free`, `no-cost`, `llama`
-
-### Añadir una licencia
-1. Haz clic en **Add file → Create new file**
-2. Nombre: `LICENSE`
-3. Haz clic en **Choose a license template**
-4. Selecciona **MIT License**
-5. Rellena tu nombre y clic en **Review and submit**
-
----
-
-## Cómo actualizar la app en el futuro
-
-Cuando hagas cambios en `index.html`:
-
-### Desde el navegador:
-1. Ve a tu repo → haz clic en `index.html`
-2. Haz clic en el lápiz ✏️
-3. Pega el contenido nuevo
-4. Commit changes
-
-### Con Git:
-```bash
-git add index.html
-git commit -m "Descripción del cambio"
-git push
-```
-
-GitHub Pages se actualiza automáticamente en 1-2 minutos.
-
----
-
-## Estructura final del repositorio
-
-```
-nexus-ai/
-├── index.html      ← La app completa (único archivo necesario)
-├── README.md       ← Descripción del proyecto
-└── LICENSE         ← Licencia MIT (opcional)
+```text
+https://TU_USUARIO.github.io/zerokey-ai/
 ```
 
 ---
 
-## ¿Problemas?
+## 4. Comprobación final
 
-- **La app no carga en GitHub Pages**: espera 5 minutos y recarga. La primera vez tarda.
-- **Aparece el README en vez de la app**: asegúrate de que el archivo se llama exactamente `index.html` (minúsculas).
-- **Error 404**: verifica que Pages está activado en Settings → Pages.
+Antes de compartir:
 
----
-
-## Comparte tu proyecto
-
-Una vez publicado, comparte el enlace:
-- **Reddit**: r/ChatGPT, r/artificial, r/selfhosted
-- **Twitter/X**: con hashtags `#AI #FreeAI #OpenSource`
-- **ProductHunt**: lanza el proyecto
-- **HackerNews**: post en Show HN
+- Abre la app en móvil y escritorio.
+- Prueba un prompt de texto sin claves.
+- Prueba el cambio de tema.
+- Prueba exportar sesión.
+- Abre el modal de claves y confirma que puedes guardar y borrar una clave.
+- No publiques claves reales en el repositorio.
 
 ---
 
-¡Listo! Tu app estará online y accesible para cualquiera en el mundo. 🎉
+## 5. Recomendación de publicación
+
+Añade estos topics al repositorio:
+
+```text
+ai, llm, javascript, html, github-pages, local-first, open-source
+```
